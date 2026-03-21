@@ -24,7 +24,7 @@ val projectConfig = PropertiesUtils.load(rootProject.file("config/project.proper
 
 val isOfficial = JenkinsUtils.IS_ON_CI || GitHubActionUtils.IS_ON_OFFICIAL_REPO
 
-val versionType = System.getenv("VERSION_TYPE") ?: if (isOfficial) "nightly" else "unofficial"
+val versionType = System.getenv("VERSION_TYPE") ?: "dev"
 val versionRoot = System.getenv("VERSION_ROOT") ?: projectConfig.getProperty("versionRoot") ?: "3"
 
 val microsoftAuthId = System.getenv("MICROSOFT_AUTH_ID") ?: ""
@@ -33,9 +33,9 @@ val curseForgeApiKey = System.getenv("CURSEFORGE_API_KEY") ?: ""
 
 val launcherExe = System.getenv("HMCL_LAUNCHER_EXE") ?: ""
 
-val buildNumber = System.getenv("BUILD_NUMBER")?.toInt()
+val buildNumber = (System.getenv("BUILD_NUMBER")?: projectConfig.getProperty("buildNumber")).toInt()
 if (buildNumber != null) {
-    version = if (JenkinsUtils.IS_ON_CI && versionType == "dev") {
+    version = if (versionType == "dev") {
         "$versionRoot.0.$buildNumber"
     } else {
         "$versionRoot.$buildNumber"

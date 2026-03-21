@@ -265,13 +265,16 @@ public final class HMCLGameLauncher extends DefaultLauncher {
         }), "exit-waiter", isDaemon));
     }
 
+    public boolean isCancelled(){
+        return !generateOptionsTxt();
+    }
+
+    /**
+     * use isCancelled() before using this!!
+     */
     @Override
     public ManagedProcess launch() throws IOException, InterruptedException {
-        if (generateOptionsTxt()) {
-            return super.launch();
-        } else {
-            return null;
-        }
+        return super.launch();
     }
 
     @Override

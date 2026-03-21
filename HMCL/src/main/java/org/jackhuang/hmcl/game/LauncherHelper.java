@@ -220,21 +220,16 @@ public final class LauncherHelper {
                                     ? null // Unnecessary to start listening to game process output when close launcher immediately after game launched.
                                     : new HMCLProcessListener(repository, version.get(), authInfo, launchOptions, launchingLatch, gameVersion.isPresent())
                     );
-                }).thenComposeAsync(launcher -> { // launcher is prev task's result
+                }).thenAcceptAsync(launcher -> {
+                    // process is LaunchTask's result
                     if (scriptFile == null) {
-                        Task<ManagedProcess> launch = Task.supplyAsync(launcher::launch);
-                        if (launch == null) {
-                            return Task.completed(null);
+                        boolean cancelled = launcher.isCancelled();
+                        ManagedProcess process = launcher.launch();
+                        if (cancelled) {
+                            runLater(() -> { process.stop();
+                                launchingStepsPane.fireEvent(new DialogCloseEvent());});
+                            return;
                         }
-                        return launch;
-                    } else {
-                        return Task.supplyAsync(() -> {
-                            launcher.makeLaunchScript(scriptFile);
-                            return null;
-                        });
-                    }
-                }).thenAcceptAsync(process -> { // process is LaunchTask's result
-                    if (scriptFile == null) {
                         PROCESSES.add(new WeakReference<ManagedProcess>(process));
                         if (launcherVisibility == LauncherVisibility.CLOSE)
                             Launcher.stopApplication();
