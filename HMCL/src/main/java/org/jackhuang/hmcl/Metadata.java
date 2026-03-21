@@ -35,7 +35,27 @@ public final class Metadata {
     private Metadata() {
     }
 
-    public static final String NAME = Locale.getDefault().getLanguage().equals(Locale.ENGLISH)? "HMCL++" : "HMCL艹";
+    /*
+    private static boolean isSupportCJK;
+    private static Locale defaultLocale;
+
+    static {
+        defaultLocale = Locale.getDefault();
+        isSupportCJK = defaultLocale
+                .equals(Locale.SIMPLIFIED_CHINESE) ||
+                defaultLocale
+                .equals(Locale.TRADITIONAL_CHINESE) ||
+                defaultLocale
+                .equals(new Locale("zh", "HK")) ||
+                defaultLocale
+                .equals(Locale.JAPANESE) ||
+                defaultLocale
+                .equals(Locale.KOREAN);
+
+    }
+    */
+
+    public static final String NAME = "HMCL++";
     public static final String FULL_NAME = "Hello Minecraft! Launcher Plus Plus (aka " + NAME + ")";
     public static final String VERSION = System.getProperty("hmcl.version.override", JarUtils.getAttribute("hmcl.version", "@develop@"));
 
@@ -51,7 +71,6 @@ public final class Metadata {
     public static final String DOCS_URL = "https://docs.hmcl.net";
     public static final String CONTACT_URL = DOCS_URL + "/help.html";
     public static final String EULA_URL = DOCS_URL + "/eula/hmcl.html";
-    public static final String GROUPS_URL = "https://www.bilibili.com/opus/905435541874409529";
 
     public static final String BUILD_CHANNEL = JarUtils.getAttribute("hmcl.version.type", "nightly");
 

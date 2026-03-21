@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,6 +54,11 @@ public final class FontManager {
 
     private static final Lazy<Font> DEFAULT_FONT = new Lazy<>(() -> {
         Font font;
+
+        // Load from classpath (resources)
+        font = tryLoadFontFromClasspath();
+        if (font != null)
+            return font;
 
         // Recommended
 
@@ -166,6 +172,46 @@ public final class FontManager {
             }
         }
 
+        return null;
+    }
+
+    private static Font tryLoadFontFromClasspath() {
+/*        // Try to load localised font from classpath first
+        String languageKey = I18n.getLocale().getLocale().getLanguage();
+        String FontType = "en";
+        if ("zh".equals(languageKey) || "lzh".equals(languageKey) || "ja".equals(languageKey) || "ko".equals(languageKey)) {
+
+        }
+
+        // Try language-specific font first (e.g., font_zh.ttf)
+        String resourceName = "font_" + languageKey + ".ttf";
+        Font font = loadFontFromResource(resourceName);
+        if (font != null)
+            return font;*/
+
+        // Fallback to generic font.ttf
+        Font font = loadFontFromResource("assets/font/font.ttf");
+        return font;
+    }
+
+    private static Font loadFontFromResource(String resourceName) {
+        URL resourceUrl = FontManager.class.getClassLoader().getResource(resourceName);
+        if (resourceUrl == null) {
+            // Try with class resource method
+            resourceUrl = FontManager.class.getResource("/" + resourceName);
+        }
+
+        if (resourceUrl != null) {
+            LOG.info("Load font from classpath: " + resourceName + " -> " + resourceUrl);
+            try {
+                Font font = Font.loadFont(resourceUrl.toExternalForm(), DEFAULT_FONT_SIZE);
+                if (font != null) {
+                    return font;
+                }
+            } catch (Exception e) {
+                LOG.warning("Failed to load font from classpath: " + resourceName, e);
+            }
+        }
         return null;
     }
 

@@ -19,9 +19,6 @@ package org.jackhuang.hmcl.ui.main;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPopup;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,7 +35,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
-import javafx.util.Duration;
 import org.jackhuang.hmcl.Metadata;
 import org.jackhuang.hmcl.download.DefaultDependencyManager;
 import org.jackhuang.hmcl.download.DownloadProvider;
@@ -73,7 +69,6 @@ import java.util.function.Consumer;
 
 import static org.jackhuang.hmcl.download.RemoteVersion.Type.RELEASE;
 import static org.jackhuang.hmcl.setting.ConfigHolder.config;
-import static org.jackhuang.hmcl.ui.FXUtils.SINE;
 import static org.jackhuang.hmcl.util.i18n.I18n.i18n;
 import static org.jackhuang.hmcl.util.logging.Logger.LOG;
 
@@ -224,8 +219,10 @@ public final class MainPage extends StackPane implements DecoratorPage {
             launchButton.addEventHandler(MouseEvent.MOUSE_CLICKED, secondaryClickHandle);
             menuButton.addEventHandler(MouseEvent.MOUSE_CLICKED, secondaryClickHandle);
 
-            launchPane.getChildren().setAll(launchButton, menuButton);
+            launchPane.getChildren().addAll(launchButton, menuButton);
         }
+        
+        getChildren().add(launchPane);
     }
     private void launch() {
         Profile profile = Profiles.getSelectedProfile();
@@ -269,11 +266,6 @@ public final class MainPage extends StackPane implements DecoratorPage {
                     }
                 });
         Controllers.taskDialog(task, i18n("version.launch.empty.installing"), TaskCancellationAction.NORMAL);
-    }
-
-    private void closeUpdateBubble() {
-        showUpdate.unbind();
-        showUpdate.set(false);
     }
 
     @Override

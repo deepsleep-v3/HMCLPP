@@ -109,26 +109,6 @@ public final class SettingsPage extends ScrollPane {
                 sponsorPane.getChildren().setAll(gridPane);
                 settingsPane.getContent().add(sponsorPane);
             }
-
-            {
-                ComponentSublist updatePane = new ComponentSublist();
-                updatePane.setTitle(i18n("update"));
-                updatePane.setHasSubtitle(true);
-
-                final Label lblUpdate;
-                final Label lblUpdateSub;
-                {
-                    VBox headerLeft = new VBox();
-
-                    lblUpdate = new Label(i18n("update"));
-                    lblUpdate.getStyleClass().add("title-label");
-                    lblUpdateSub = new Label();
-                    lblUpdateSub.getStyleClass().add("subtitle-label");
-
-                    headerLeft.getChildren().setAll(lblUpdate, lblUpdateSub);
-                    updatePane.setHeaderLeft(headerLeft);
-                }
-            }
             {
                 MultiFileItem<EnumCommonDirectory> fileCommonLocation = new MultiFileItem<>();
                 fileCommonLocation.loadChildren(Arrays.asList(

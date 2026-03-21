@@ -44,24 +44,6 @@ public class FeedbackPage extends SpinnerPane {
         scrollPane.setFitToWidth(true);
         FXUtils.smoothScrolling(scrollPane);
         setContent(scrollPane);
-
-        ComponentList groups = new ComponentList();
-        {
-            var users = LineButton.createExternalLinkButton(Metadata.GROUPS_URL);
-            users.setLargeTitle(true);
-            users.setLeading(FXUtils.newBuiltinImage("/assets/img/icon.png"));
-            users.setTitle(i18n("contact.chat.qq_group"));
-            users.setSubtitle(i18n("contact.chat.qq_group.statement"));
-
-            var discord = LineButton.createExternalLinkButton("https://discord.gg/jVvC7HfM6U");
-            discord.setLargeTitle(true);
-            discord.setLeading(FXUtils.newBuiltinImage("/assets/img/discord.png"));
-            discord.setTitle(i18n("contact.chat.discord"));
-            discord.setSubtitle(i18n("contact.chat.discord.statement"));
-
-            groups.getContent().setAll(users, discord);
-        }
-
         ComponentList feedback = new ComponentList();
         {
             var github = LineButton.createExternalLinkButton("https://github.com/HMCL-dev/HMCL/issues/new/choose");
@@ -80,7 +62,6 @@ public class FeedbackPage extends SpinnerPane {
 
         content.getChildren().addAll(
                 ComponentList.createComponentListTitle(i18n("contact.chat")),
-                groups,
                 ComponentList.createComponentListTitle(i18n("contact.feedback")),
                 feedback
         );

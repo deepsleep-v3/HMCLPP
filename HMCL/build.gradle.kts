@@ -53,6 +53,11 @@ if (buildNumber != null) {
 
 val embedResources by configurations.registering
 
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 dependencies {
     implementation(project(":HMCLCore"))
     implementation(project(":HMCLBoot"))
@@ -417,7 +422,6 @@ val upsideDownTranslate by tasks.registering(UpsideDownTranslate::class) {
 val createLanguageList by tasks.registering(CreateLanguageList::class) {
     resourceBundleDir.set(layout.projectDirectory.dir("src/main/resources/assets/lang"))
     resourceBundleBaseName.set("I18N")
-    additionalLanguages.set(listOf("en-Qabs"))
     outputFile.set(generatedDir.map { it.file("languages.json") })
 }
 
