@@ -220,18 +220,17 @@ public final class LauncherHelper {
                                     ? null // Unnecessary to start listening to game process output when close launcher immediately after game launched.
                                     : new HMCLProcessListener(repository, version.get(), authInfo, launchOptions, launchingLatch, gameVersion.isPresent())
                     );
-                }).thenComposeAsync(launcher -> { // launcher is prev task's result
+                }).thenAcceptAsync(launcher -> {
+                    // process is LaunchTask's result
                     if (scriptFile == null) {
-                        return Task.supplyAsync(launcher::launch);
-                    } else {
-                        return Task.supplyAsync(() -> {
-                            launcher.makeLaunchScript(scriptFile);
-                            return null;
-                        });
-                    }
-                }).thenAcceptAsync(process -> { // process is LaunchTask's result
-                    if (scriptFile == null) {
-                        PROCESSES.add(new WeakReference<>(process));
+                        boolean cancelled = launcher.isCancelled();
+                        ManagedProcess process = launcher.launch();
+                        if (cancelled) {
+                            runLater(() -> { process.stop();
+                                launchingStepsPane.fireEvent(new DialogCloseEvent());});
+                            return;
+                        }
+                        PROCESSES.add(new WeakReference<ManagedProcess>(process));
                         if (launcherVisibility == LauncherVisibility.CLOSE)
                             Launcher.stopApplication();
                         else
@@ -752,7 +751,7 @@ public final class LauncherHelper {
     /**
      * The managed process listener.
      * Guarantee that one [JavaProcess], one [HMCLProcessListener].
-     * Because every time we launched a game, we generates a new [HMCLProcessListener]
+     * Because every time we launched a game, we generate a new [HMCLProcessListener]
      */
     private final class HMCLProcessListener implements ProcessListener {
 

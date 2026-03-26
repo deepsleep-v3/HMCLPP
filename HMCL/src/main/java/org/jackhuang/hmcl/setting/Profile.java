@@ -23,6 +23,7 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.*;
+import lombok.Getter;
 import org.jackhuang.hmcl.download.DefaultDependencyManager;
 import org.jackhuang.hmcl.download.DownloadProvider;
 import org.jackhuang.hmcl.event.EventBus;
@@ -208,6 +209,7 @@ public final class Profile implements Observable {
         Platform.runLater(observableHelper::invalidate);
     }
 
+    @lombok.Getter
     public static class ProfileVersion {
         private final Profile profile;
         private final String version;
@@ -215,14 +217,6 @@ public final class Profile implements Observable {
         public ProfileVersion(Profile profile, String version) {
             this.profile = profile;
             this.version = version;
-        }
-
-        public Profile getProfile() {
-            return profile;
-        }
-
-        public String getVersion() {
-            return version;
         }
     }
 

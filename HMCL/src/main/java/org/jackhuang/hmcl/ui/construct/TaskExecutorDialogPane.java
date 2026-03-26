@@ -45,7 +45,7 @@ public class TaskExecutorDialogPane extends BorderPane {
 
     private final Label lblTitle;
     private final Label lblProgress;
-    private final JFXButton btnCancel;
+    public final JFXButton btnCancel;
     private final TaskListPane taskListPane;
 
     public TaskExecutorDialogPane(@NotNull TaskCancellationAction cancel) {
