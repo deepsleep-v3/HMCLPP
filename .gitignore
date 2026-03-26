@@ -55,8 +55,11 @@ language-subtag-registry
 
 *.exe
 
-# macos
+# macOS
 .DS_Store
+
+# old version of Windows
+[Tt][Hh][Uu][Mm][Bb][Ss].db
 
 # vscode
 .vscode/
