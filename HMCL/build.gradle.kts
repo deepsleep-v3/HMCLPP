@@ -4,7 +4,6 @@ import org.jackhuang.hmcl.gradle.ci.JenkinsUtils
 import org.jackhuang.hmcl.gradle.l10n.CheckTranslations
 import org.jackhuang.hmcl.gradle.l10n.CreateLanguageList
 import org.jackhuang.hmcl.gradle.l10n.CreateLocaleNamesResourceBundle
-import org.jackhuang.hmcl.gradle.l10n.UpsideDownTranslate
 import org.jackhuang.hmcl.gradle.mod.ParseModDataTask
 import org.jackhuang.hmcl.gradle.utils.PropertiesUtils
 import java.net.URI
@@ -53,6 +52,7 @@ if (buildNumber != null) {
 val embedResources by configurations.registering
 
 dependencies {
+    implementation("org.javatuples:javatuples:1.2")
     implementation(project(":HMCLCore"))
     implementation(project(":HMCLBoot"))
     implementation("libs:JFoenix")
@@ -227,7 +227,6 @@ tasks.shadowJar {
 
 tasks.processResources {
     dependsOn(createPropertiesFile)
-    dependsOn(upsideDownTranslate)
     dependsOn(createLocaleNamesResourceBundle)
     dependsOn(createLanguageList)
 
@@ -238,7 +237,6 @@ tasks.processResources {
 
     into("assets/lang") {
         from(createLanguageList.map { it.outputFile })
-        from(upsideDownTranslate.map { it.outputFile })
         from(createLocaleNamesResourceBundle.map { it.outputDirectory })
     }
 
@@ -403,15 +401,9 @@ tasks.register<CheckTranslations>("checkTranslations") {
 
 val generatedDir = layout.buildDirectory.dir("generated")
 
-val upsideDownTranslate by tasks.registering(UpsideDownTranslate::class) {
-    inputFile.set(layout.projectDirectory.file("src/main/resources/assets/lang/I18N.properties"))
-    outputFile.set(generatedDir.map { it.file("generated/i18n/I18N_en_Qabs.properties") })
-}
-
 val createLanguageList by tasks.registering(CreateLanguageList::class) {
     resourceBundleDir.set(layout.projectDirectory.dir("src/main/resources/assets/lang"))
     resourceBundleBaseName.set("I18N")
-    additionalLanguages.set(listOf("en-Qabs"))
     outputFile.set(generatedDir.map { it.file("languages.json") })
 }
 

@@ -19,9 +19,6 @@ package org.jackhuang.hmcl.ui.main;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPopup;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,7 +35,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
-import javafx.util.Duration;
+import lombok.Getter;
 import org.jackhuang.hmcl.Metadata;
 import org.jackhuang.hmcl.download.DefaultDependencyManager;
 import org.jackhuang.hmcl.download.DownloadProvider;
@@ -53,20 +50,14 @@ import org.jackhuang.hmcl.theme.Themes;
 import org.jackhuang.hmcl.ui.Controllers;
 import org.jackhuang.hmcl.ui.FXUtils;
 import org.jackhuang.hmcl.ui.SVG;
-import org.jackhuang.hmcl.ui.animation.AnimationUtils;
 import org.jackhuang.hmcl.ui.animation.ContainerAnimations;
 import org.jackhuang.hmcl.ui.animation.TransitionPane;
 import org.jackhuang.hmcl.ui.construct.MessageDialogPane;
-import org.jackhuang.hmcl.ui.construct.TwoLineListItem;
 import org.jackhuang.hmcl.ui.decorator.DecoratorPage;
 import org.jackhuang.hmcl.ui.versions.GameListPopupMenu;
 import org.jackhuang.hmcl.ui.versions.Versions;
-import org.jackhuang.hmcl.upgrade.RemoteVersion;
-import org.jackhuang.hmcl.upgrade.UpdateChecker;
-import org.jackhuang.hmcl.upgrade.UpdateHandler;
 import org.jackhuang.hmcl.util.*;
 import org.jackhuang.hmcl.util.i18n.I18n;
-import org.jackhuang.hmcl.util.javafx.BindingMapping;
 import org.jackhuang.hmcl.util.platform.OperatingSystem;
 import org.jackhuang.hmcl.util.platform.Platform;
 import org.jackhuang.hmcl.util.versioning.GameVersionNumber;
@@ -79,7 +70,6 @@ import java.util.function.Consumer;
 
 import static org.jackhuang.hmcl.download.RemoteVersion.Type.RELEASE;
 import static org.jackhuang.hmcl.setting.ConfigHolder.config;
-import static org.jackhuang.hmcl.ui.FXUtils.SINE;
 import static org.jackhuang.hmcl.util.i18n.I18n.i18n;
 import static org.jackhuang.hmcl.util.logging.Logger.LOG;
 
@@ -89,13 +79,12 @@ public final class MainPage extends StackPane implements DecoratorPage {
     private final ReadOnlyObjectWrapper<State> state = new ReadOnlyObjectWrapper<>();
 
     private final StringProperty currentGame = new SimpleStringProperty(this, "currentGame");
-    private final BooleanProperty showUpdate = new SimpleBooleanProperty(this, "showUpdate");
-    private final ObjectProperty<RemoteVersion> latestVersion = new SimpleObjectProperty<>(this, "latestVersion");
+    @Getter
     private final ObservableList<Version> versions = FXCollections.observableArrayList();
+    @Getter
     private Profile profile;
 
     private TransitionPane announcementPane;
-    private final StackPane updatePane;
     private final JFXButton menuButton;
 
     {
@@ -161,41 +150,6 @@ public final class MainPage extends StackPane implements DecoratorPage {
 
             StackPane.setMargin(announcementPane, new Insets(-15));
             getChildren().add(announcementPane);
-        }
-
-        updatePane = new StackPane();
-        updatePane.setVisible(false);
-        updatePane.getStyleClass().add("bubble");
-        FXUtils.setLimitWidth(updatePane, 230);
-        FXUtils.setLimitHeight(updatePane, 55);
-        StackPane.setAlignment(updatePane, Pos.TOP_RIGHT);
-        FXUtils.onClicked(updatePane, this::onUpgrade);
-        FXUtils.onChange(showUpdateProperty(), this::showUpdate);
-
-        {
-            HBox hBox = new HBox();
-            hBox.setSpacing(12);
-            hBox.setAlignment(Pos.CENTER_LEFT);
-            StackPane.setAlignment(hBox, Pos.CENTER_LEFT);
-            StackPane.setMargin(hBox, new Insets(9, 12, 9, 16));
-            {
-                TwoLineListItem prompt = new TwoLineListItem();
-                prompt.setSubtitle(i18n("update.bubble.subtitle"));
-                prompt.setPickOnBounds(false);
-                prompt.titleProperty().bind(BindingMapping.of(latestVersionProperty()).map(latestVersion ->
-                        latestVersion == null ? "" : i18n("update.bubble.title", latestVersion.getVersion())));
-
-                hBox.getChildren().setAll(SVG.UPDATE.createIcon(20), prompt);
-            }
-
-            JFXButton closeUpdateButton = new JFXButton();
-            closeUpdateButton.setGraphic(SVG.CLOSE.createIcon(10));
-            StackPane.setAlignment(closeUpdateButton, Pos.TOP_RIGHT);
-            closeUpdateButton.getStyleClass().add("toggle-icon-tiny");
-            StackPane.setMargin(closeUpdateButton, new Insets(5));
-            closeUpdateButton.setOnAction(e -> closeUpdateBubble());
-
-            updatePane.getChildren().setAll(hBox, closeUpdateButton);
         }
 
         HBox launchPane = new HBox();
@@ -270,43 +224,8 @@ public final class MainPage extends StackPane implements DecoratorPage {
             launchPane.getChildren().setAll(launchButton, menuButton);
         }
 
-        getChildren().addAll(updatePane, launchPane);
+        getChildren().addAll(launchPane);
 
-    }
-
-    private void showUpdate(boolean show) {
-        doAnimation(show);
-
-        if (show && !config().isDisableAutoShowUpdateDialog()
-                && getLatestVersion() != null
-                && !Objects.equals(config().getPromptedVersion(), getLatestVersion().getVersion())) {
-            Controllers.dialog(new MessageDialogPane.Builder("", i18n("update.bubble.title", getLatestVersion().getVersion()), MessageDialogPane.MessageType.INFO)
-                    .addAction(i18n("button.view"), () -> {
-                        config().setPromptedVersion(getLatestVersion().getVersion());
-                        onUpgrade();
-                    })
-                    .addCancel(null)
-                    .build());
-        }
-    }
-
-    private void doAnimation(boolean show) {
-        if (AnimationUtils.isAnimationEnabled()) {
-            Duration duration = Duration.millis(320);
-            Timeline nowAnimation = new Timeline();
-            nowAnimation.getKeyFrames().addAll(
-                    new KeyFrame(Duration.ZERO,
-                            new KeyValue(updatePane.translateXProperty(), show ? 260 : 0, SINE)),
-                    new KeyFrame(duration,
-                            new KeyValue(updatePane.translateXProperty(), show ? 0 : 260, SINE)));
-            if (show) nowAnimation.getKeyFrames().add(
-                    new KeyFrame(Duration.ZERO, e -> updatePane.setVisible(true)));
-            else nowAnimation.getKeyFrames().add(
-                    new KeyFrame(duration, e -> updatePane.setVisible(false)));
-            nowAnimation.play();
-        } else {
-            updatePane.setVisible(show);
-        }
     }
 
     private void launch() {
@@ -353,26 +272,9 @@ public final class MainPage extends StackPane implements DecoratorPage {
         Controllers.taskDialog(task, i18n("version.launch.empty.installing"), TaskCancellationAction.NORMAL);
     }
 
-    private void onUpgrade() {
-        RemoteVersion target = UpdateChecker.getLatestVersion();
-        if (target == null) {
-            return;
-        }
-        UpdateHandler.updateFrom(target);
-    }
-
-    private void closeUpdateBubble() {
-        showUpdate.unbind();
-        showUpdate.set(false);
-    }
-
     @Override
     public ReadOnlyObjectWrapper<State> stateProperty() {
         return state;
-    }
-
-    public Profile getProfile() {
-        return profile;
     }
 
     public String getCurrentGame() {
@@ -385,34 +287,6 @@ public final class MainPage extends StackPane implements DecoratorPage {
 
     public void setCurrentGame(String currentGame) {
         this.currentGame.set(currentGame);
-    }
-
-    public ObservableList<Version> getVersions() {
-        return versions;
-    }
-
-    public boolean isShowUpdate() {
-        return showUpdate.get();
-    }
-
-    public BooleanProperty showUpdateProperty() {
-        return showUpdate;
-    }
-
-    public void setShowUpdate(boolean showUpdate) {
-        this.showUpdate.set(showUpdate);
-    }
-
-    public RemoteVersion getLatestVersion() {
-        return latestVersion.get();
-    }
-
-    public ObjectProperty<RemoteVersion> latestVersionProperty() {
-        return latestVersion;
-    }
-
-    public void setLatestVersion(RemoteVersion latestVersion) {
-        this.latestVersion.set(latestVersion);
     }
 
     public void initVersions(Profile profile, List<Version> versions) {

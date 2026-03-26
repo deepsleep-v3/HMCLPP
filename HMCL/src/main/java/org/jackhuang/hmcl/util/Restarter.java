@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package org.jackhuang.hmcl.util;
-
-import org.jackhuang.hmcl.upgrade.UpdateHandler;
 import org.jackhuang.hmcl.util.io.JarUtils;
 
 import java.io.IOException;
@@ -36,8 +34,6 @@ public final class Restarter {
         if (thisJar == null) {
             throw new IOException("Failed to find current HMCL location");
         }
-
-        UpdateHandler.startJava(thisJar);
     }
 
     private Restarter() {
