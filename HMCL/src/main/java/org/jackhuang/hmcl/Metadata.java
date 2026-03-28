@@ -72,7 +72,7 @@ public final class Metadata {
     public static final String CONTACT_URL = DOCS_URL + "/help.html";
     public static final String EULA_URL = DOCS_URL + "/eula/hmcl.html";
 
-    public static final String BUILD_CHANNEL = JarUtils.getAttribute("hmcl.version.type", "nightly");
+    public static final String BUILD_CHANNEL = JarUtils.getAttribute("hmcl.version.type", "dev");
 
     public static final Path CURRENT_DIRECTORY = Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
     public static final Path MINECRAFT_DIRECTORY = OperatingSystem.getWorkingDirectory("minecraft");
