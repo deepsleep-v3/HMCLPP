@@ -6,7 +6,7 @@ plugins {
     id("checkstyle")
 }
 
-group = "org.jackhuang"
+group = "io.github.deepsleep_v3"
 version = "3.0"
 
 subprojects {

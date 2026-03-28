@@ -209,10 +209,17 @@ public final class Profile implements Observable {
         Platform.runLater(observableHelper::invalidate);
     }
 
-    @lombok.Getter
     public static class ProfileVersion {
         private final Profile profile;
         private final String version;
+
+        public Profile getProfile() {
+            return profile;
+        }
+
+        public String getVersion() {
+            return version;
+        }
 
         public ProfileVersion(Profile profile, String version) {
             this.profile = profile;
