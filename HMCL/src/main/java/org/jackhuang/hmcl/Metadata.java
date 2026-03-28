@@ -57,7 +57,7 @@ public final class Metadata {
 
     public static final String NAME = "HMCL++";
     public static final String FULL_NAME = "Hello Minecraft! Launcher Plus Plus (aka " + NAME + ")";
-    public static final String VERSION = System.getProperty("hmcl.version.override", JarUtils.getAttribute("hmcl.version", "@develop@"));
+    public static final String VERSION = JarUtils.getAttribute("hmcl.version", "@develop@");
 
     public static final String TITLE = NAME + " " + VERSION;
     public static final String FULL_TITLE = FULL_NAME + " v" + VERSION;
