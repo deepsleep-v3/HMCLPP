@@ -1,5 +1,4 @@
 import org.jackhuang.hmcl.gradle.TerracottaConfigUpgradeTask
-import org.jackhuang.hmcl.gradle.ci.GitHubActionUtils
 import org.jackhuang.hmcl.gradle.ci.JenkinsUtils
 import org.jackhuang.hmcl.gradle.l10n.CheckTranslations
 import org.jackhuang.hmcl.gradle.l10n.CreateLanguageList
@@ -56,6 +55,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.44")
     testCompileOnly("org.projectlombok:lombok:1.18.44")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.44")
+    implementation("cn.hutool:hutool-all:5.8.26")
+    implementation("com.sshtools:two-slices:0.9.3")
     implementation(libs.twelvemonkeys.imageio.webp)
     implementation(libs.java.info)
     implementation(libs.monet.fx)
@@ -370,7 +371,7 @@ tasks.register<JavaExec>("run") {
 
 val upgradeTerracottaConfig = tasks.register<TerracottaConfigUpgradeTask>("upgradeTerracottaConfig") {
     val destination = layout.projectDirectory.file("src/main/resources/assets/terracotta.json")
-    val source = layout.projectDirectory.file("terracotta-template.json");
+    val source = layout.projectDirectory.file("terracotta-template.json")
 
     classifiers.set(listOf(
         "windows-x86_64", "windows-arm64",

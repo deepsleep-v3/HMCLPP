@@ -31,6 +31,8 @@ import javafx.stage.Stage;
 import org.jackhuang.hmcl.setting.ConfigHolder;
 import org.jackhuang.hmcl.setting.SambaException;
 import org.jackhuang.hmcl.ui.FXUtils;
+import org.jackhuang.hmcl.ui.main.MainPage;
+import org.jackhuang.hmcl.ui.main.RootPage;
 import org.jackhuang.hmcl.util.FileSaver;
 import org.jackhuang.hmcl.task.AsyncTaskExecutor;
 import org.jackhuang.hmcl.task.Schedulers;
@@ -173,8 +175,14 @@ public final class Launcher extends Application {
                 .append(")");
     }
 
-    private static ButtonType showAlert(AlertType alertType, String contentText, ButtonType... buttons) {
+    public static ButtonType showAlert(AlertType alertType, String contentText, ButtonType... buttons) {
         return new Alert(alertType, contentText, buttons).showAndWait().orElse(null);
+    }
+
+    public static ButtonType showAlert(AlertType alertType, String title, String contentText, ButtonType... buttons) {
+        Alert alert = new Alert(alertType, contentText, buttons);
+        alert.setTitle(title);
+        return alert.showAndWait().orElse(null);
     }
 
     private static boolean isConfigInTempDir() {
@@ -194,7 +202,8 @@ public final class Launcher extends Application {
             return configPath.contains("\\Temporary Internet Files\\")
                     || configPath.contains("\\INetCache\\")
                     || configPath.contains("\\$Recycle.Bin\\")
-                    || configPath.contains("\\recycler\\");
+                    || configPath.contains("\\recycler\\")
+                    || configPath.startsWith(System.getenv("temp"));
         } else if (OperatingSystem.CURRENT_OS.isLinuxOrBSD()) {
             return configPath.startsWith("/tmp/")
                     || configPath.startsWith("/var/tmp/")
@@ -321,7 +330,7 @@ public final class Launcher extends Application {
 
     public static void stopApplication() {
         LOG.info("Stopping application.\n" + StringUtils.getStackTrace(Thread.currentThread().getStackTrace()));
-
+        Controllers.getRootPage().getMainPage().offlineAccountNotificationsThread.interrupt();
         runInFX(() -> {
             if (Controllers.getStage() == null)
                 return;

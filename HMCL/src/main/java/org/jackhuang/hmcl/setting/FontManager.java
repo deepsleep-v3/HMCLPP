@@ -175,7 +175,7 @@ public final class FontManager {
         return null;
     }
 
-    private static Font tryLoadFontFromClasspath() {
+    private static Map<String, Font> tryLoadFontFromClasspath() {
 /*        // Try to load localised font from classpath first
         String languageKey = I18n.getLocale().getLocale().getLanguage();
         String FontType = "en";

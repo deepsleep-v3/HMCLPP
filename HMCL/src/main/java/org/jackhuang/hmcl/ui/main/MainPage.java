@@ -25,6 +25,8 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
@@ -36,11 +38,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 import lombok.Getter;
+import org.jackhuang.hmcl.Launcher;
 import org.jackhuang.hmcl.Metadata;
+import org.jackhuang.hmcl.auth.offline.OfflineAccount;
 import org.jackhuang.hmcl.download.DefaultDependencyManager;
 import org.jackhuang.hmcl.download.DownloadProvider;
 import org.jackhuang.hmcl.download.VersionList;
 import org.jackhuang.hmcl.game.Version;
+import org.jackhuang.hmcl.setting.Accounts;
 import org.jackhuang.hmcl.setting.DownloadProviders;
 import org.jackhuang.hmcl.setting.Profile;
 import org.jackhuang.hmcl.setting.Profiles;
@@ -62,6 +67,7 @@ import org.jackhuang.hmcl.util.platform.OperatingSystem;
 import org.jackhuang.hmcl.util.platform.Platform;
 import org.jackhuang.hmcl.util.versioning.GameVersionNumber;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +80,51 @@ import static org.jackhuang.hmcl.util.i18n.I18n.i18n;
 import static org.jackhuang.hmcl.util.logging.Logger.LOG;
 
 public final class MainPage extends StackPane implements DecoratorPage {
+    public static class OfflineAccountNotifications implements Runnable {
+        public static TrayIcon trayIcon;
+        public static SystemTray tray;
+        {
+            if (SystemTray.isSupported()) {
+                tray = SystemTray.getSystemTray();
+                Image image = Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/assets/img/icon.png"));
+                trayIcon = new TrayIcon(image, "HMCL++");
+                trayIcon.setImageAutoSize(true);
+                try {
+                    tray.add(trayIcon);
+                } catch (AWTException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw new RuntimeException("System tray is not supported");
+            }
+        }
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+                Accounts.getAccounts().forEach(account -> {
+                    if (account instanceof OfflineAccount){
+                        if (Math.random() < 0.13) {
+                            FXUtils.runInFX(() -> {
+                                ButtonType result = Launcher.showAlert(Alert.AlertType.INFORMATION,
+                                        i18n("account.notifications.offline.title"),
+                                        i18n("account.notifications.offline.text"),
+                                        ButtonType.OK,
+                                        ButtonType.CANCEL);
+                            });
+                        }
+                    }
+                });
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e){
+                    tray.remove(trayIcon);
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+    }
+    public Thread offlineAccountNotificationsThread = new Thread(new OfflineAccountNotifications());
     private static final String ANNOUNCEMENT = "announcement";
 
     private final ReadOnlyObjectWrapper<State> state = new ReadOnlyObjectWrapper<>();
@@ -88,10 +139,10 @@ public final class MainPage extends StackPane implements DecoratorPage {
     private final JFXButton menuButton;
 
     {
+        offlineAccountNotificationsThread.start();
         HBox titleNode = new HBox(8);
         titleNode.setPadding(new Insets(0, 0, 0, 2));
         titleNode.setAlignment(Pos.CENTER_LEFT);
-
         ImageView titleIcon = new ImageView(FXUtils.newBuiltinImage("/assets/img/icon-title.png"));
         Label titleLabel = new Label(Metadata.FULL_TITLE);
         if (I18n.isUpsideDown()) {
